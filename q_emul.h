@@ -21,20 +21,27 @@
 #ifndef Q_EMUL_H
 #define Q_EMUL_H
 
+#include <stdio.h>
+#include <complex.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define MAX_QUBITS 31 
-#define Q_VERSION 201
+#define MAX_QUBITS 63 
+#define Q_VERSION 301
 
 #define GATE_H      'H'
 #define GATE_I      'I'
 #define GATE_C      'C'
 #define GATE_N      'N'
 #define GATE_X      'X'
+#define GATE_P      'P'
+#define GATE_T      'T'
 #define GATE_DELETE 'd'
 #define GATE_CLONE  'c'
+#define GATE_SWAP   's'
+#define GATE_QFT    'f'
 #define MEASURE     'm'
 #define MEASURE_0   '0'
 #define MEASURE_1   '1'
@@ -52,27 +59,32 @@ extern "C" {
 
 typedef struct _QState
 {
-  int Value;
-  int Count;
+  unsigned long Value;
+  double complex Count;
   struct _QState * next;
 } QState;
 
 double qEmul_GetProbability(void);
 void qEmul_ResetProbability(void);
 int qEmul_Version(void);
-int qEmul_Count2List(QState * qList);
+double complex qEmul_Count2List(QState * qList);
 int qEmul_PrintList(int numQubits, QState * qList, char * outStr, int outStrLen);
 void qEmul_CreateList(QState ** qList);
 void qEmul_FreeList(QState * qList);
-void qEmul_InsertInList_H(int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_X(int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_I(int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_0(int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_1(int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_CN(int cnMask, int mask,QState * currState, QState ** qList);
-void qEmul_InsertInList_oracle(int nMask, int addMask, int subMask, int mulMask, int divMask, int modMask, int powMask, int resMask, QState * currState, QState ** qList);
+void qEmul_InsertInList_H(unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_X(unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_I(unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_0(unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_1(unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_CP(unsigned long cMask, unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_CT(unsigned long cMask, unsigned long mask,QState * currState, QState ** qList);
+void qEmul_InsertInList_CN(unsigned long cMask, unsigned long mask, QState * currState, QState ** qList);
+void qEmul_InsertInList_swap(unsigned long swapMask, unsigned long mask, QState * currState, QState ** qList);
+void qEmul_InsertInList_QFT(unsigned long qftMask, unsigned long mask, QState * currState, QState ** qList);
 
-int qEmul_oracle(int numQubits, int(*Oracle)(int), QState ** qList);
+void qEmul_InsertInList_oracle(unsigned long nMask, unsigned long addMask, unsigned long subMask, unsigned long mulMask, unsigned long divMask, unsigned long modMask, unsigned long powMask, unsigned long resMask, QState * currState, QState ** qList);
+
+int qEmul_oracle(int numQubits, unsigned long (*Oracle)(int), QState ** qList);
 int qEmul_exec(int numQubits, char * Algo, QState **qList);
 
 

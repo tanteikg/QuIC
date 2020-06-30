@@ -1,30 +1,21 @@
 #!/usr/bin/bash
-
 echo 'QuIC test script'
-
 echo ''
 echo '--> Testing Bell, Expect [00],[11]'
 ./QuIC 2 HI,CN.
-
-
 echo ''
 echo '--> Testing GHZ, Expect [000],[111]'
 ./QuIC 3 HHX,ICN,CIN,HHH.
 ./QuIC 3 HII,CNI,ICN.
-
 echo ''
 echo '--> Testing Deutsche-Jozsa, Expect [1*]'
 ./QuIC 4 IIIX,HHHH,CIIN,HHHH,mIII.
-
 echo ''
 echo '--> Testing Grover 3 bit, Expect high [111]'
-
 ./QuIC 4 HHHI,IIIX,IIIH,IIII,CCCN,IIII,IIIH,IIIX,HHHI,XXXI,IIHI,CCNI,IIHI,XXXI,HHHI,IIIX,IIIH,IIII,CCCN,IIII,IIIH,IIIX,HHHI,XXXI,IIHI,CCNI,IIHI,XXXI,HHHI,IIId.
-
-
 echo ''
 echo '--> Testing Simon Expect [00*],[11*] '
 ./QuIC 4 HHII,CINI,CIIN,ICNI,ICIN,IImm,HHII.
-
-
+echo '--> Testing Shor Expect [000*],[001*] '
+./QuIC 5 HHHII,IICNI,IICIN,IHIII,PCIII,HIIII,ICTII,CIPII.
 echo 'QuIC test end'

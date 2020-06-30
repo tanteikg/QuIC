@@ -26,6 +26,7 @@
 #include "q_emul.h"
 
 static double Probability = 1.0;
+#define PI (2 * acos(0.0))
 
 double qEmul_GetProbability(void)
 {
@@ -42,10 +43,10 @@ int qEmul_Version(void)
 	return Q_VERSION;
 }
 
-int qEmul_Count2List(QState * qList)
+double complex qEmul_Count2List(QState * qList)
 {
         QState * tempPtr;
-        int count = 0;
+        double complex count = 0.0;
 
         tempPtr = qList;
         while (tempPtr)
@@ -56,7 +57,7 @@ int qEmul_Count2List(QState * qList)
         return count;
 }
 
-static int printBinStr(char * binString, int numQubits, int value)
+static int printBinStr(char * binString, int numQubits, unsigned long value)
 {
 	int i;
 
@@ -93,7 +94,7 @@ int qEmul_PrintList(int numQubits, QState * qList, char * outStr, int outStrLen)
 	while (temp)
 	{
 		printBinStr(tempBinStr, numQubits, temp->Value);
-		sprintf(tempStr,"Value %c[%s] Count[%02d]\n",(temp->Count<0)?'-':' ', tempBinStr, abs(temp->Count));
+		sprintf(tempStr,"Value %c[%s] Count[%02.0f%s]\n",(creal(temp->Count)<0.0)?'-':' ', tempBinStr, (fabs(creal(temp->Count)) > fabs(cimag(temp->Count)))? fabs(creal(temp->Count)):fabs(cimag(temp->Count)),(fabs(creal(temp->Count)) > fabs(cimag(temp->Count)))? "":"i");
 		temp = temp->next;
 		if (strlen(tempStr) > outStrLen - strlen(outStr))
 			return -1;
@@ -129,7 +130,7 @@ void qEmul_CreateList(QState ** qList)
 		exit(-1);
 	}
 	temp->Value = 0;
-	temp->Count = 1;
+	temp->Count = 1.0;
 	temp->next = NULL; 
 	Probability = 1.0;
 	srand(time(NULL));
@@ -186,7 +187,7 @@ static void InsertInList(QState * newState, QState ** qList)
 		else
 		{
 			tmpPtr->Count += newState->Count;
-			if (tmpPtr->Count == 0)
+			if ((creal(tmpPtr->Count) == 0) && (cimag(tmpPtr->Count)==0))
 			{
 				if (prevPtr == NULL)
 				{
@@ -202,7 +203,7 @@ static void InsertInList(QState * newState, QState ** qList)
 
 }
 
-void qEmul_InsertInList_H(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_H(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
@@ -230,8 +231,70 @@ void qEmul_InsertInList_H(int mask,QState * currState, QState ** qList)
 		InsertInList(&tempState,qList);
 	}
 }
+
+void qEmul_InsertInList_CT(unsigned long cMask, unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+
+	if (!currState)
+		return;
+
+	tempState.next = NULL;
+
+	if ((cMask & currState->Value) == cMask) // allow for when cMask == 0
+	{	
+		if (mask & currState->Value)
+		{
+			tempState.Value = currState->Value;
+			tempState.Count = currState->Count * (1 + _Complex_I) / sqrt(2.0) ; // e^{pi/4}
+		}
+		else
+		{
+			tempState.Value = currState->Value;
+			tempState.Count = currState->Count;
+		}
+	}
+	else
+	{
+		tempState.Value = currState->Value;
+		tempState.Count = currState->Count;
+	}
+	
+	InsertInList(&tempState,qList);
+}
+
+void qEmul_InsertInList_CP(unsigned long cMask, unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+
+	if (!currState)
+		return;
+
+	tempState.next = NULL;
+
+	if ((cMask & currState->Value) == cMask) // allow for when cMask == 0
+	{	
+		if (mask & currState->Value)
+		{
+			tempState.Value = currState->Value;
+			tempState.Count = currState->Count * _Complex_I;
+		}
+		else
+		{
+			tempState.Value = currState->Value;
+			tempState.Count = currState->Count;
+		}
+	}
+	else
+	{
+		tempState.Value = currState->Value;
+		tempState.Count = currState->Count;
+	}
+	
+	InsertInList(&tempState,qList);
+}
  
-void qEmul_InsertInList_X(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_X(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
@@ -250,11 +313,11 @@ void qEmul_InsertInList_X(int mask,QState * currState, QState ** qList)
 	InsertInList(&tempState,qList);
 }
 
-void qEmul_InsertInList_c(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_c(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
-	int tempVal;
-	int multiplier = 1;
+	unsigned long tempVal;
+	unsigned long multiplier = 1;
 		
 	if (!currState)
 		return;
@@ -284,11 +347,11 @@ void qEmul_InsertInList_c(int mask,QState * currState, QState ** qList)
 	InsertInList(&tempState,qList);
 }
 
-void qEmul_InsertInList_d(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_d(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
-	int tempVal;
-	int multiplier;
+	unsigned long tempVal;
+	unsigned long multiplier;
 		
 	if (!currState)
 		return;
@@ -314,7 +377,7 @@ void qEmul_InsertInList_d(int mask,QState * currState, QState ** qList)
 	InsertInList(&tempState,qList);
 }
 
-void qEmul_InsertInList_I(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_I(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
@@ -328,7 +391,7 @@ void qEmul_InsertInList_I(int mask,QState * currState, QState ** qList)
 	InsertInList(&tempState,qList);
 }
 
-void qEmul_InsertInList_0(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_0(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
@@ -345,7 +408,7 @@ void qEmul_InsertInList_0(int mask,QState * currState, QState ** qList)
 	}
 }
 
-void qEmul_InsertInList_1(int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_1(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
@@ -362,14 +425,14 @@ void qEmul_InsertInList_1(int mask,QState * currState, QState ** qList)
 	}
 }
 
-void qEmul_InsertInList_CN(int cnMask, int mask,QState * currState, QState ** qList)
+void qEmul_InsertInList_CN(unsigned long cMask, unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
 
 	if (!currState)
 		return;
 	tempState.next = NULL;
-	if (((cnMask & currState->Value) == cnMask) && (cnMask != 0))
+	if (((cMask & currState->Value) == cMask) && (cMask != 0))
 	{
 		if (mask & currState->Value)
 		{
@@ -384,10 +447,105 @@ void qEmul_InsertInList_CN(int cnMask, int mask,QState * currState, QState ** qL
 	InsertInList(&tempState,qList);
 }
 
-static int putValueToMask(int mask, int value)
+void qEmul_InsertInList_QFT(unsigned long qftMask, unsigned long mask,QState * currState, QState ** qList)
 {
-	int retValue = 0;
-	int addOn = 1;
+	QState tempState1;
+	QState tempState2;
+	unsigned long tempMask;
+	int rValue = 2;
+
+	if (!currState)
+		return;
+	if (!qftMask)
+		return;
+	if (!mask)
+		return;
+
+	tempState1.next = NULL;
+	tempState2.next = NULL;
+
+	// start with H
+
+	if (mask & currState->Value)
+	{
+		tempState1.Value = currState->Value - mask;
+		tempState1.Count = currState->Count;
+		tempState2.Value = currState->Value;
+		tempState2.Count = 0 - currState->Count;
+	}
+	else
+	{
+		tempState1.Value = currState->Value;
+		tempState1.Count = currState->Count;
+		tempState2.Value = currState->Value + mask;
+		tempState2.Count = currState->Count;
+	}
+
+	// perform control rotations 
+
+	tempMask = mask;
+	while (tempMask > 0)
+	{
+		tempMask >>=1;
+		if (tempMask & qftMask)
+		{
+			if (tempMask & currState->Value)
+			{
+				if (mask & tempState1.Value)
+					tempState1.Count *= (cos(PI/rValue) + sin(PI/rValue)*_Complex_I);
+				if (mask & tempState2.Value)
+					tempState2.Count *= (cos(PI/rValue) + sin(PI/rValue)*_Complex_I);
+			}
+			rValue*=2;
+		}
+		
+	}	
+
+ //printf("QFT value %ld %f %f, %ld %f %f\n",tempState1.Value,creal(tempState1.Count),cimag(tempState1.Count),tempState2.Value,creal(tempState2.Count),cimag(tempState2.Count)); 
+	InsertInList(&tempState1,qList);
+	InsertInList(&tempState2,qList);
+}
+
+void qEmul_InsertInList_swap(unsigned long swapMask, unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+
+	if (!currState)
+		return;
+	if (!swapMask)
+		return;
+	if (!mask)
+		return;
+
+	tempState.next = NULL;
+
+	if (swapMask & currState->Value)
+	{
+		if (!(mask & currState->Value))
+		{
+			tempState.Value = currState->Value + mask - swapMask;
+		}
+		else
+			tempState.Value = currState->Value;
+	}
+	else
+	{
+		if (mask & currState->Value)
+		{
+			tempState.Value = currState->Value - mask + swapMask;
+		}
+		else
+			tempState.Value = currState->Value;
+
+	}
+	tempState.Count = currState->Count;
+	InsertInList(&tempState,qList);
+}
+
+static unsigned long putValueToMask(unsigned long mask, unsigned long value)
+{
+	unsigned long retValue = 0;
+	unsigned long multiple = 1;
 
 	while (mask)
 	{
@@ -395,9 +553,9 @@ static int putValueToMask(int mask, int value)
 		{
 			if (value & 1)
 			{
-				retValue+=addOn;
+				retValue+=multiple;
 			}
-			addOn <<= 1;
+			multiple <<= 1;
 			value >>= 1;
 		}
 		mask >>= 1;
@@ -406,18 +564,18 @@ static int putValueToMask(int mask, int value)
 
 }
 
-static int getValueFromMask(int mask, int value)
+static unsigned long getValueFromMask(unsigned long mask, unsigned long value)
 {
-	int addOn = 1;
-	int retValue = 0;
+	unsigned long multiple = 1;
+	unsigned long retValue = 0;
 
 	while ((value > 0) && (mask > 0))
 	{
 		if (mask & 1)
 		{
 			if (value & 1)
-				retValue +=addOn;
-			addOn <<=1;
+				retValue +=multiple;
+			multiple <<=1;
 		}
 		value >>= 1;
 		mask >>= 1;
@@ -426,13 +584,13 @@ static int getValueFromMask(int mask, int value)
 	return retValue;
 }
 
-void qEmul_InsertInList_oracle(int nMask, int addMask, int subMask, int mulMask, int divMask, int modMask, int powMask, int resMask, QState * currState, QState ** qList)
+void qEmul_InsertInList_oracle(unsigned long nMask, unsigned long addMask, unsigned long subMask, unsigned long mulMask, unsigned long divMask, unsigned long modMask, unsigned long powMask, unsigned long resMask, QState * currState, QState ** qList)
 {
 	QState tempState;
-	int aValue = 0;
-	int yValue = 0;
-	int resValue = 0;
-	int invresMask = 0xFFFFFFFF ^ resMask;
+	unsigned long aValue = 0;
+	unsigned long yValue = 0;
+	unsigned long resValue = 0;
+	unsigned long invresMask = 0xFFFFFFFFFFFFFFFF ^ resMask;
 
 	if (!currState)
 		return;
@@ -506,7 +664,7 @@ void qEmul_InsertInList_oracle(int nMask, int addMask, int subMask, int mulMask,
 
 // To call external oracle
 
-int qEmul_oracle(int numQubits, int(*Oracle)(int), QState ** qList)
+int qEmul_oracle(int numQubits, unsigned long (*Oracle)(int), QState ** qList)
 {
 	QState * currPtr, * newList;
 	QState tempState;
@@ -527,15 +685,17 @@ int qEmul_oracle(int numQubits, int(*Oracle)(int), QState ** qList)
 	}
 	qEmul_FreeList(*qList);
 	*qList = newList;
+	return 0;
 	
 }
 
 int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 {
 	QState * currPtr, * newList;
-	int mask;
+	unsigned long mask;
 	int i;
 	int oracleDone = 0;
+	int swapDone = 0;
 	int retQubits = numQubits;
 
 	currPtr = *qList;
@@ -573,6 +733,66 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 			}
 
 		}
+		else if ((qAlgo[i] == GATE_P) || (qAlgo[i] == GATE_T))
+		{
+			int j;
+			unsigned long tempVal = 1;
+			tempVal <<= numQubits-1;
+			unsigned long cMask = 0;
+
+			for (j = 0; j < numQubits; j++)
+			{
+				if (qAlgo[j] == GATE_C)
+					cMask += tempVal;
+				tempVal >>= 1;
+			}	
+			while (currPtr != NULL)
+			{
+				if (qAlgo[i] == GATE_P)
+					qEmul_InsertInList_CP(cMask, mask, currPtr, &newList);
+				else // GATE_T
+					qEmul_InsertInList_CT(cMask, mask, currPtr, &newList);
+
+				currPtr = currPtr->next;
+			}
+
+		}
+		else if (qAlgo[i] == GATE_SWAP)
+		{
+			unsigned long swapMask = 0;
+			unsigned long tempVal = 1;
+			tempVal <<= numQubits-1;
+			int j;
+
+			if (!swapDone)
+			{
+				for (j = 0; j < numQubits; j++)
+				{
+					if (i != j)
+					{
+						if (qAlgo[j] == GATE_SWAP)
+							swapMask += tempVal;
+					}
+					tempVal >>= 1;
+				}	
+				while (currPtr != NULL)
+				{
+					qEmul_InsertInList_swap(swapMask, mask, currPtr, &newList);
+					currPtr = currPtr->next;
+				}
+				swapDone = 1;
+			}
+			else
+			{
+				while (currPtr != NULL)
+				{
+					qEmul_InsertInList_I(mask, currPtr, &newList);
+					currPtr = currPtr->next;
+				}
+			}
+			
+
+		}
 		else if (qAlgo[i] == GATE_DELETE)
 		{
 			while (currPtr != NULL)
@@ -595,26 +815,28 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 		}
 		else if ((qAlgo[i] == MEASURE_0) || (qAlgo[i] == MEASURE_1) || (qAlgo[i] == MEASURE))
 		{
-			int startCount = qEmul_Count2List(*qList);
-			int endCount = 0;
+			unsigned long startCount = qEmul_Count2List(*qList);
+			unsigned long endCount = 0;
 			char qubitVal;
 			if (qAlgo[i] == MEASURE)
 			{
-				int chosen = 0;
+				double chosen = 0;
 				QState * tempPtr = *qList;
 				while (tempPtr != NULL)
 				{
-					chosen += (int) abs(tempPtr->Count);
+					chosen += fabs(creal(tempPtr->Count));  // either one will be 0
+					chosen += fabs(cimag(tempPtr->Count));
 					tempPtr = tempPtr->next;
 				}
 				
 				if (chosen > 0)	
 				{
-					chosen = (rand() % chosen) + 1;
+					chosen = (rand() % (int) trunc(chosen)) + 1;
 					tempPtr = currPtr;
-					while (chosen - (int) abs(tempPtr->Count) > 0)
+					while ((chosen - fabs(creal(tempPtr->Count)) - fabs(cimag(tempPtr->Count))) > 0)
 					{
-						chosen -= (int) abs(tempPtr->Count);
+						chosen -= fabs(creal(tempPtr->Count));
+						chosen -= fabs(cimag(tempPtr->Count));
 						tempPtr = tempPtr->next;
 					}
 					if ((tempPtr->Value & mask) == 0)	
@@ -648,19 +870,19 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 		else if (qAlgo[i] == GATE_N)
 		{
 			int j;
-			int tempVal = 1;
+			unsigned long tempVal = 1;
 			tempVal <<= numQubits-1;
-			int cnMask = 0;
+			unsigned long cMask = 0;
 
 			for (j = 0; j < numQubits; j++)
 			{
 				if (qAlgo[j] == GATE_C)
-					cnMask += tempVal;
+					cMask += tempVal;
 				tempVal >>= 1;
 			}	
 			while (currPtr != NULL)
 			{
-				qEmul_InsertInList_CN(cnMask, mask, currPtr, &newList);
+				qEmul_InsertInList_CN(cMask, mask, currPtr, &newList);
 				currPtr = currPtr->next;
 			}
 
@@ -678,16 +900,16 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 			else
 			{
 				int j;
-				int tempVal = 1;
+				unsigned long tempVal = 1;
 				tempVal <<= numQubits-1;
-				int addMask = 0;
-				int subMask = 0;
-				int mulMask = 0;
-				int divMask = 0;
-				int powMask = 0;
-				int nMask = 0;
-				int modMask = 0;
-				int resMask = 0;
+				unsigned long addMask = 0;
+				unsigned long subMask = 0;
+				unsigned long mulMask = 0;
+				unsigned long divMask = 0;
+				unsigned long powMask = 0;
+				unsigned long nMask = 0;
+				unsigned long modMask = 0;
+				unsigned long resMask = 0;
 
 				
 				for (j = 0; j < numQubits; j++)
@@ -724,6 +946,25 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 				}
 				oracleDone = 1;
 			}
+		}
+		else if (qAlgo[i] == GATE_QFT)  // invoking QFT
+		{
+			unsigned long qftMask = 0;
+			unsigned long tempVal = 1;
+			tempVal <<= numQubits-1;
+			int j;
+			for (j = 0; j < numQubits; j++)
+			{
+				if (qAlgo[j] == GATE_QFT)
+					qftMask += tempVal;
+				tempVal >>= 1;
+			}	
+			while (currPtr != NULL)
+			{
+				qEmul_InsertInList_QFT(qftMask, mask, currPtr, &newList);
+				currPtr = currPtr->next;
+			}
+
 		}
 		else
 		{
