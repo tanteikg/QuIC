@@ -39,6 +39,7 @@ void usage(char * Cmd)
 	printf("     %s 12 XXHHXXIXIIII,nn^^%%%%====. (to calculate 3^i mod 13 where 0 < i < 3)\n",Cmd);
 	printf("     %s 2 XX,ff,ss (2 Qubit QFT)\n", Cmd);
 	printf("     %s 5 HHHII,IICNI,IICIN,IHIII,PCIII,HIIII,ICTII,CIPII (3 Qubit Shor\n", Cmd);
+	printf("     %s 7 HHHIIII,IICINII,IICIINI,IIICINI,ICINICI,IIICINI,IIIINIC,ICIICIN,HIIIIII,CPIIIII,IHIIIII,CITIIII,ICPIIII,IIHIIII (factoring 15 using 3 Qubit Shor [Vandersypen et al])\n", Cmd);
 	printf("Notes: 1. 0 < numQubits < %d\n",MAX_QUBITS);
 	printf("       2. Valid gates are H (Hadamard), I (Identity), X (Not), CN (Control-Not), P (Phase), T (PI/8), s (SWAP), f (QFT) \n"); 
 	printf("          Valid Oracle operations are *,/,+,-,^,% (multiply, divide, add, subtract, power, modulo). Use n for 1st parameter, operation for 2nd parameter and = for result \n"); 

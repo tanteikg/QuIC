@@ -42,6 +42,7 @@ extern "C" {
 #define GATE_CLONE  'c'
 #define GATE_SWAP   's'
 #define GATE_QFT    'f'
+#define GATE_INVQFT 't'
 #define MEASURE     'm'
 #define MEASURE_0   '0'
 #define MEASURE_1   '1'

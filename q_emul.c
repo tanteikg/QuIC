@@ -51,7 +51,7 @@ double complex qEmul_Count2List(QState * qList)
         tempPtr = qList;
         while (tempPtr)
         {
-                count += tempPtr->Count*tempPtr->Count;
+                count += fabs(tempPtr->Count*tempPtr->Count);
                 tempPtr = tempPtr->next;
         }
         return count;
@@ -277,7 +277,7 @@ void qEmul_InsertInList_CP(unsigned long cMask, unsigned long mask,QState * curr
 		if (mask & currState->Value)
 		{
 			tempState.Value = currState->Value;
-			tempState.Count = currState->Count * _Complex_I;
+			tempState.Count = currState->Count * (cos(PI/2) + sin(PI/2)*_Complex_I);
 		}
 		else
 		{
@@ -445,6 +445,68 @@ void qEmul_InsertInList_CN(unsigned long cMask, unsigned long mask,QState * curr
 		tempState.Value = currState->Value;
 	tempState.Count = currState->Count;
 	InsertInList(&tempState,qList);
+}
+
+void qEmul_InsertInList_INVQFT(unsigned long qftMask, unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+	QState tempState1;
+	QState tempState2;
+	unsigned long tempMask;
+	unsigned long rValue = 2;
+
+	if (!currState)
+		return;
+	if (!qftMask)
+		return;
+	if (!mask)
+		return;
+
+	tempState.next = NULL;
+	tempState1.next = NULL;
+	tempState2.next = NULL;
+
+	// perform control rotations 
+	tempState.Value = currState->Value;
+	tempState.Count = currState->Count;
+
+	tempMask = mask << 1;
+	while ((tempMask < qftMask) && (tempMask != 0))
+	{
+
+		if (tempMask & qftMask)
+		{
+			if (tempMask & currState->Value)
+			{
+				if (mask & tempState.Value)
+					tempState.Count *= (cos(PI/rValue) + sin(PI/rValue)*_Complex_I);
+			}
+			rValue*=2;
+		}
+		tempMask <<=1;
+		
+	}	
+
+	// end with H if it is the last value
+	if (mask & tempState.Value)
+	{
+		tempState1.Value = tempState.Value - mask;
+		tempState1.Count = tempState.Count;
+		tempState2.Value = tempState.Value;
+		tempState2.Count = 0 - tempState.Count;
+	}
+	else
+	{
+		tempState1.Value = tempState.Value;
+		tempState1.Count = tempState.Count;
+		tempState2.Value = tempState.Value + mask;
+		tempState2.Count = tempState.Count;
+	}
+
+ //printf("QFT value %ld %f %f, %ld %f %f\n",tempState1.Value,creal(tempState1.Count),cimag(tempState1.Count),tempState2.Value,creal(tempState2.Count),cimag(tempState2.Count)); 
+	InsertInList(&tempState1,qList);
+	InsertInList(&tempState2,qList);
+
 }
 
 void qEmul_InsertInList_QFT(unsigned long qftMask, unsigned long mask,QState * currState, QState ** qList)
@@ -824,7 +886,7 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 				QState * tempPtr = *qList;
 				while (tempPtr != NULL)
 				{
-					chosen += fabs(creal(tempPtr->Count));  // either one will be 0
+					chosen += fabs(creal(tempPtr->Count));  
 					chosen += fabs(cimag(tempPtr->Count));
 					tempPtr = tempPtr->next;
 				}
@@ -832,7 +894,7 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 				if (chosen > 0)	
 				{
 					chosen = (rand() % (int) trunc(chosen)) + 1;
-					tempPtr = currPtr;
+					tempPtr = *qList; //currPtr;
 					while ((chosen - fabs(creal(tempPtr->Count)) - fabs(cimag(tempPtr->Count))) > 0)
 					{
 						chosen -= fabs(creal(tempPtr->Count));
@@ -962,6 +1024,25 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 			while (currPtr != NULL)
 			{
 				qEmul_InsertInList_QFT(qftMask, mask, currPtr, &newList);
+				currPtr = currPtr->next;
+			}
+
+		}
+		else if (qAlgo[i] == GATE_INVQFT)  // invoking inverse QFT
+		{
+			unsigned long qftMask = 0;
+			unsigned long tempVal = 1;
+			tempVal <<= numQubits-1;
+			int j;
+			for (j = 0; j < numQubits; j++)
+			{
+				if (qAlgo[j] == GATE_INVQFT)
+					qftMask += tempVal;
+				tempVal >>= 1;
+			}	
+			while (currPtr != NULL)
+			{
+				qEmul_InsertInList_INVQFT(qftMask, mask, currPtr, &newList);
 				currPtr = currPtr->next;
 			}
 
