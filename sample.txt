@@ -1,0 +1,13 @@
+# this is a comment
+HHIHH
+CXINI,ICXNI
+XIXHX
+# the following is a loop
+{L 3
+ICIHN
+IXXXI
+}
+# oracle call <oracle number> <num X qubits> <num Y qubits> <num params> <param 1> <param 2> ...
+!O 10 2 3 2 3 7
+HHHH.
+

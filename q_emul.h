@@ -23,13 +23,15 @@
 
 #include <stdio.h>
 #include <complex.h>
+#include <stdarg.h>
+#include "q_oracle.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_QUBITS 63 
-#define Q_VERSION 301
+#define Q_VERSION 400
 
 #define GATE_H      'H'
 #define GATE_I      'I'
@@ -85,8 +87,11 @@ void qEmul_InsertInList_QFT(unsigned long qftMask, unsigned long mask, QState * 
 
 void qEmul_InsertInList_oracle(unsigned long nMask, unsigned long addMask, unsigned long subMask, unsigned long mulMask, unsigned long divMask, unsigned long modMask, unsigned long powMask, unsigned long resMask, QState * currState, QState ** qList);
 
-int qEmul_oracle(int numQubits, unsigned long (*Oracle)(int), QState ** qList);
+int qEmul_oracle(unsigned int numYQubits, unsigned long (*Oracle)(unsigned long *), char * oracleParams, QState ** qList);
+int qEmul_function(unsigned int numBits, unsigned long * (*Function)(int, unsigned long *, unsigned long *), char * functionParams, QState ** qList);
+
 int qEmul_exec(int numQubits, char * Algo, QState **qList);
+
 
 
 #ifdef __cplusplus

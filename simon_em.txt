@@ -1,0 +1,10 @@
+# to use simon's algorithm to break even-mansour cipher
+# 
+#  
+HHHHHIIIII
+!O 11 5 17 32 21 29
+!O 10 5 17 32
+IIIIImmmmm
+HHHHHIIIII
+IIIIIddddd
+!F 10 5

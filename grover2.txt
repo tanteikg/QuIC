@@ -1,0 +1,6 @@
+# 2 qubit grover
+HHI,IIX,IIH,
+III,CCN,III,
+IIH,IIX,
+HHI,XXI,IHI,CNI,IHI,
+XXI,HHI

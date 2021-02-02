@@ -1,0 +1,5 @@
+# to test the exp_mod oracle
+XIIXIIII
+# call expmod oracle with <oracle num> <X qubits> <Y qubits> <num param> <param 1> <param 2> ... 
+!O 10 4 3 15 
+IIIIIIII.

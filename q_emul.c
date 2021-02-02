@@ -68,7 +68,6 @@ static int printBinStr(char * binString, int numQubits, unsigned long value)
 	}
 	binString[numQubits] = 0;
 
-
 }
 
 int qEmul_PrintList(int numQubits, QState * qList, char * outStr, int outStrLen)
@@ -135,6 +134,7 @@ void qEmul_CreateList(QState ** qList)
 	Probability = 1.0;
 	srand(time(NULL));
 	*qList = temp;
+	qOracle_setup();
 }
 
 static void InsertInList(QState * newState, QState ** qList)
@@ -726,11 +726,27 @@ void qEmul_InsertInList_oracle(unsigned long nMask, unsigned long addMask, unsig
 
 // To call external oracle
 
-int qEmul_oracle(int numQubits, unsigned long (*Oracle)(int), QState ** qList)
+int qEmul_oracle(unsigned int numYQubits, unsigned long (*Oracle)(unsigned long*), char * oracleParams, QState ** qList)
 {
 	QState * currPtr, * newList;
 	QState tempState;
+	unsigned long oracleArg[127]; // we don't expect the oracle to take in more than 127 arguments
+	unsigned long tempLong;
+	char tempStr[10000];
+	int i;
 
+	memset(oracleArg,0,sizeof(oracleArg));
+	oracleArg[0] = numYQubits;
+
+	i = 2;
+	while ((strlen(oracleParams) > 0) && (i<127))
+	{
+		memset(tempStr,0,sizeof(tempStr));
+		sscanf(oracleParams,"%u %[^\n]",&tempLong,tempStr);
+		strcpy(oracleParams,tempStr);
+		oracleArg[i++] = tempLong;
+		
+	}
 	currPtr = *qList;
 	if (!currPtr)
 	{
@@ -739,12 +755,87 @@ int qEmul_oracle(int numQubits, unsigned long (*Oracle)(int), QState ** qList)
 	newList = NULL;
 	while (currPtr != NULL)
 	{
-		tempState.Value = Oracle(currPtr->Value);
+		oracleArg[1] = currPtr->Value;	
+		tempState.Value = Oracle(oracleArg);
 		tempState.Count = currPtr->Count;
 		tempState.next = NULL;
 		InsertInList(&tempState,&newList);
 		currPtr = currPtr->next;
 	}
+	qEmul_FreeList(*qList);
+	*qList = newList;
+	return 0;
+	
+}
+
+// to call a classical function
+
+int qEmul_function(unsigned int numBits, unsigned long * (*Function)(int, unsigned long *, unsigned long*), char * functionParams, QState ** qList)
+{
+	QState * currPtr, * newList;
+	QState tempState;
+	unsigned long functionArg[127]; // we don't expect the function to take in more than 127 arguments
+	unsigned long tempLong;
+	char tempStr[10000];
+	int i;
+	unsigned long * qubitValues, *newQubitValues;
+
+	memset(functionArg,0,sizeof(functionArg));
+	i = 0;
+	while ((strlen(functionParams) > 0) && (i<127))
+	{
+		memset(tempStr,0,sizeof(tempStr));
+		sscanf(functionParams,"%u %[^\n]",&tempLong,tempStr);
+		strcpy(functionParams,tempStr);
+		functionArg[i++] = tempLong;
+		
+	}
+	currPtr = *qList;
+	if (!currPtr)
+	{
+		return -1;
+	}
+	
+	tempLong = 1;
+	while (currPtr != NULL)
+	{
+		currPtr = currPtr->next;
+		tempLong++;
+	}
+	if (tempLong < numBits)
+		tempLong = numBits;
+	qubitValues = (unsigned long *) malloc(tempLong * sizeof(unsigned long));
+	if (!qubitValues)
+	{
+		fprintf(stderr,"error: unable to malloc qubitValues\n");
+		return -1;
+	}
+	for (i=0;i<tempLong;i++)
+		qubitValues[i] = 0;
+
+	qubitValues[0] = tempLong-1; // number of values
+	currPtr = *qList;
+	i = 1;
+	while (currPtr != NULL)
+	{
+		qubitValues[i++] = currPtr->Value;
+		currPtr = currPtr->next;
+	}
+
+	newQubitValues = Function(numBits, functionArg, qubitValues); 
+	newList = NULL;
+
+	if (newQubitValues) // there is no free here, so newQubitValues is likely to be re-using the space allocated by qubitValues 
+	{
+		for (i=0;i<newQubitValues[0];i++)
+		{
+			tempState.Value = newQubitValues[i+1] ;
+			tempState.Count = 1.0;
+			tempState.next = NULL;
+			InsertInList(&tempState,&newList);
+		}
+	}
+	free(qubitValues);
 	qEmul_FreeList(*qList);
 	*qList = newList;
 	return 0;
