@@ -125,7 +125,7 @@ void qEmul_CreateList(QState ** qList)
 
 	if (!temp)
 	{
-		printf("Error in malloc qList\n");
+		fprintf(stderr,"Error in malloc qList\n");
 		exit(-1);
 	}
 	temp->Value = 0;
@@ -150,7 +150,7 @@ static void InsertInList(QState * newState, QState ** qList)
 		*qList = malloc(sizeof(QState));
 		if (!*qList)
 		{
-			printf("Error: unable to malloc \n");
+			fprintf(stderr,"Error: unable to malloc \n");
 			exit(-1);
 		}
 		memcpy(*qList,newState,sizeof(QState));
@@ -169,7 +169,7 @@ static void InsertInList(QState * newState, QState ** qList)
 			temp = malloc(sizeof(QState));
 			if (!temp)
 			{
-				printf("Error: unable to malloc\n");
+				fprintf(stderr,"Error: unable to malloc\n");
 				exit(-1);
 			}
 			memcpy(temp,newState,sizeof(QState));
@@ -736,13 +736,15 @@ int qEmul_oracle(unsigned int numYQubits, unsigned long (*Oracle)(unsigned long*
 	int i;
 
 	memset(oracleArg,0,sizeof(oracleArg));
+	for (i=0;i<127;i++)
+		oracleArg[i] = 0;
 	oracleArg[0] = numYQubits;
 
 	i = 2;
 	while ((strlen(oracleParams) > 0) && (i<127))
 	{
 		memset(tempStr,0,sizeof(tempStr));
-		sscanf(oracleParams,"%u %[^\n]",&tempLong,tempStr);
+		sscanf(oracleParams,"%lu %[^\n]",&tempLong,tempStr);
 		strcpy(oracleParams,tempStr);
 		oracleArg[i++] = tempLong;
 		
@@ -1140,7 +1142,7 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 		}
 		else
 		{
-			printf("ERROR: %c mode not yet implemented\n",qAlgo[i]);
+			fprintf(stderr,"ERROR: %c mode not yet implemented\n",qAlgo[i]);
 			
 		}
 		currPtr = newList;

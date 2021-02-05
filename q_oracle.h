@@ -26,11 +26,8 @@
 #define ORACLE_MODEXP		10
 #define ORACLE_EVENMAN_MODEXP	11	
 
-#define ORACLE_MD5 		20
-#define ORACLE_SHA1		21
 #define ORACLE_SHA2256		22
-#define ORACLE_SHA2512		23
-#define ORACLE_SHA3384		24
+#define ORACLE_EVENMAN_SHA2256	23	
 
 #define ORACLE_DES		31
 #define ORACLE_3DES		32
@@ -48,6 +45,8 @@ extern unsigned long * (* FunctionList[MAX_FUNCTION])(int, unsigned long *, unsi
 void qOracle_setup(void);
 unsigned long Oracle_ModularExponentiation(unsigned long * params);
 unsigned long Oracle_EvenMansour_ModExp(unsigned long * params);
+unsigned long Oracle_SHA256(unsigned long * params);
+unsigned long Oracle_EvenMansour_SHA256(unsigned long * params);
 
 unsigned long * Function_Gaussian_Elimination_Binary(int numBits, unsigned long * functionParams, unsigned long * qubitValues);
 

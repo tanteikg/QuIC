@@ -1,4 +1,4 @@
-CFLAGS = -g
+CFLAGS = -O
 
 target : QuIC.exe QuICrun.exe
 

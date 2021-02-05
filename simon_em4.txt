@@ -1,8 +1,8 @@
 # using simon to break even-mansour
 HHHHIIII
-!O 11 4 13 16 14 11
-!O 10 4 13 16 
+!O 11 4 11 7 8 11
+!O 10 4 11 7 
 IIIImmmm
-HHHHIIII
+HHHHIIII_
 IIIIdddd
 !F 10 4
