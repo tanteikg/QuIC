@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #define MAX_QUBITS 63 
-#define Q_VERSION 400
+#define Q_VERSION 401
 
 #define GATE_H      'H'
 #define GATE_I      'I'

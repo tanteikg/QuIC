@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include <math.h>
 #include "q_emul.h"
+#include "omp.h"
 
 static double Probability = 1.0;
 #define PI (2 * acos(0.0))
@@ -729,11 +730,10 @@ void qEmul_InsertInList_oracle(unsigned long nMask, unsigned long addMask, unsig
 int qEmul_oracle(unsigned int numYQubits, unsigned long (*Oracle)(unsigned long*), char * oracleParams, QState ** qList)
 {
 	QState * currPtr, * newList;
-	QState tempState;
 	unsigned long oracleArg[127]; // we don't expect the oracle to take in more than 127 arguments
 	unsigned long tempLong;
 	char tempStr[10000];
-	int i;
+	int i,count;
 
 	memset(oracleArg,0,sizeof(oracleArg));
 	for (i=0;i<127;i++)
@@ -755,15 +755,36 @@ int qEmul_oracle(unsigned int numYQubits, unsigned long (*Oracle)(unsigned long*
 		return -1;
 	}
 	newList = NULL;
+
+	count = 0;
 	while (currPtr != NULL)
 	{
-		oracleArg[1] = currPtr->Value;	
-		tempState.Value = Oracle(oracleArg);
-		tempState.Count = currPtr->Count;
-		tempState.next = NULL;
-		InsertInList(&tempState,&newList);
-		currPtr = currPtr->next;
+		count++;
+		currPtr=currPtr->next;
 	}
+
+//	omp_set_num_threads(8);
+	#pragma omp parallel for
+	for(i=0;i<count;i++)
+	{
+		QState tempState;
+		int j;
+		unsigned long tempArg[127]; // we don't expect the oracle to take in more than 127 arguments
+		QState* tempPtr = *qList;
+		for (j=0;j<i;j++)
+			tempPtr = tempPtr->next;
+		memcpy(tempArg,oracleArg,sizeof(tempArg));
+		
+		tempArg[1] = tempPtr->Value;	
+		tempState.Value = Oracle(tempArg);
+		tempState.Count = tempPtr->Count;
+		tempState.next = NULL;
+
+		#pragma omp critical
+		InsertInList(&tempState,&newList);
+
+	}
+
 	qEmul_FreeList(*qList);
 	*qList = newList;
 	return 0;
