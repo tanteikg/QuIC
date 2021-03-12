@@ -865,6 +865,60 @@ int qEmul_function(unsigned int numBits, unsigned long * (*Function)(int, unsign
 	
 }
 
+int qEmul_Write(int numQubits, char * fileName, QState * qList)
+{
+	QState * currPtr = qList;
+	FILE * f;
+
+	if (!currPtr)
+		return -1;
+
+	f = fopen(fileName,"wb");
+	if (!f)
+	{
+		fprintf(stderr,"unable to open %s for writing\n",fileName);
+		return -1;	
+	}
+	while (currPtr)
+	{
+		
+		if (fwrite(currPtr,sizeof(QState),1,f) != 1)
+		{
+			fprintf(stderr,"error writing to %s\n",fileName);
+			fclose(f);
+			return -1;
+		}			
+		currPtr = currPtr->next;
+	}
+	fclose(f);
+	return 0;
+
+}
+
+int qEmul_Read(int numQubits, char * fileName, QState ** qList)
+{
+	QState tempState;
+	FILE * f;
+
+	f = fopen(fileName,"rb");
+	if (!f)
+	{
+		fprintf(stderr,"unable to open %s for reading\n",fileName);
+		return -1;	
+	}
+	while (!feof(f))
+	{
+		if (fread(&tempState,sizeof(QState),1,f) == 1) 
+		{
+			tempState.next = NULL;
+			InsertInList(&tempState,qList);
+		}			
+	}
+	fclose(f);
+	return 0;
+}
+
+
 int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 {
 	QState * currPtr, * newList;

@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #define MAX_QUBITS 63 
-#define Q_VERSION 401
+#define Q_VERSION 402
 
 #define GATE_H      'H'
 #define GATE_I      'I'
@@ -92,6 +92,8 @@ int qEmul_function(unsigned int numBits, unsigned long * (*Function)(int, unsign
 
 int qEmul_exec(int numQubits, char * Algo, QState **qList);
 
+int qEmul_Write(int numQubits, char * fileName, QState * qList);
+int qEmul_Read(int numQubits, char * fileName, QState ** qList);
 
 
 #ifdef __cplusplus

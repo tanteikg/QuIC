@@ -1,0 +1,5 @@
+# using simon to break even-mansour
+XHHHHHHHHHIIIIIIIIII
+!O 23 10 123 682 341 
+!O 22 10 123 
+!W save1.bin

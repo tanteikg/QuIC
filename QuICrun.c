@@ -32,6 +32,8 @@
 #define TAG_EXEC '!'
 #define TAG_ORACLE 'O'
 #define TAG_FUNCTION 'F'
+#define TAG_WRITE 'W'
+#define TAG_READ 'R'
 
 void usage(char * Cmd)
 {
@@ -133,6 +135,22 @@ int main(int argc, char * argv[])
 				qEmul_function(numBit,FunctionList[functionNum],functionParams,&qList);
 				continue;
 
+			}
+			else if (AlgoStr[1] == TAG_READ)
+			{
+				char fileName[sizeof(algoBuf)]; 
+
+				sscanf(&(AlgoStr[2]),"%s",fileName);
+				
+				qEmul_Read(numQubits,fileName,&qList);
+			}
+			else if (AlgoStr[1] == TAG_WRITE)
+			{
+				char fileName[sizeof(algoBuf)]; 
+
+				sscanf(&(AlgoStr[2]),"%s",fileName);
+				
+				qEmul_Write(numQubits,fileName,qList);
 			}
 			else
 			{
