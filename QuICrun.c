@@ -143,6 +143,7 @@ int main(int argc, char * argv[])
 				sscanf(&(AlgoStr[2]),"%s",fileName);
 				
 				qEmul_Read(numQubits,fileName,&qList);
+				continue;
 			}
 			else if (AlgoStr[1] == TAG_WRITE)
 			{
@@ -151,6 +152,8 @@ int main(int argc, char * argv[])
 				sscanf(&(AlgoStr[2]),"%s",fileName);
 				
 				qEmul_Write(numQubits,fileName,qList);
+				continue;
+		
 			}
 			else
 			{
