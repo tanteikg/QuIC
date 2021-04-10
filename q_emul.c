@@ -295,6 +295,47 @@ void qEmul_InsertInList_CP(unsigned long cMask, unsigned long mask,QState * curr
 	InsertInList(&tempState,qList);
 }
  
+void qEmul_InsertInList_Ht(unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+
+	if (!currState)
+		return;
+
+	tempState.next = NULL;
+
+	if (mask & currState->Value)
+	{
+		tempState.Value = currState->Value - mask;
+	}
+	else
+		tempState.Value = currState->Value;
+	tempState.Count = currState->Count;
+	InsertInList(&tempState,qList);
+}
+
+void qEmul_InsertInList_Hb(unsigned long mask,QState * currState, QState ** qList)
+{
+	QState tempState;
+
+	if (!currState)
+		return;
+
+	tempState.next = NULL;
+
+	if (mask & currState->Value)
+	{
+		tempState.Value = currState->Value;
+		tempState.Count = 0 - currState->Count;
+	}
+	else
+	{
+		tempState.Value = currState->Value + mask;
+		tempState.Count = currState->Count;
+	}
+	InsertInList(&tempState,qList);
+}
+
 void qEmul_InsertInList_X(unsigned long mask,QState * currState, QState ** qList)
 {
 	QState tempState;
@@ -1021,6 +1062,24 @@ int qEmul_exec(int numQubits, char * qAlgo, QState ** qList)
 				}
 			}
 			
+
+		}
+		else if (qAlgo[i] == GATE_Ht)
+		{
+			while (currPtr != NULL)
+			{
+				qEmul_InsertInList_Ht(mask, currPtr, &newList);
+				currPtr = currPtr->next;
+			}
+
+		}
+		else if (qAlgo[i] == GATE_Hb)
+		{
+			while (currPtr != NULL)
+			{
+				qEmul_InsertInList_Hb(mask, currPtr, &newList);
+				currPtr = currPtr->next;
+			}
 
 		}
 		else if (qAlgo[i] == GATE_DELETE)

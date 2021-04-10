@@ -1,0 +1,5 @@
+# using simon to break even-mansour
+!R save2.bin
+!R save3.bin
+IIIIIIIIIIdddddddddd
+!F 10 10 

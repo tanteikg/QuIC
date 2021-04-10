@@ -25,6 +25,7 @@
 
 #define ORACLE_MODEXP		10
 #define ORACLE_EVENMAN_MODEXP	11	
+#define ORACLE_CHASKEY12	12	
 
 #define ORACLE_SHA2256		22
 #define ORACLE_EVENMAN_SHA2256	23	
@@ -47,6 +48,8 @@ unsigned long Oracle_ModularExponentiation(unsigned long * params);
 unsigned long Oracle_EvenMansour_ModExp(unsigned long * params);
 unsigned long Oracle_SHA256(unsigned long * params);
 unsigned long Oracle_EvenMansour_SHA256(unsigned long * params);
+
+unsigned long Oracle_ChasKey12(unsigned long * params);
 
 unsigned long * Function_Gaussian_Elimination_Binary(int numBits, unsigned long * functionParams, unsigned long * qubitValues);
 

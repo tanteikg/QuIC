@@ -40,6 +40,8 @@ extern "C" {
 #define GATE_X      'X'
 #define GATE_P      'P'
 #define GATE_T      'T'
+#define GATE_Ht	    't'
+#define GATE_Hb	    'b'
 #define GATE_DELETE 'd'
 #define GATE_CLONE  'c'
 #define GATE_SWAP   's'
