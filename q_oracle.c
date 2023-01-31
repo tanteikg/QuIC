@@ -53,6 +53,9 @@ typedef struct {
 	unsigned char d[4];
 } key_set;
 
+typedef u_int32_t uint32_t;
+typedef u_int8_t uint8_t;
+
 static void sha256_init(SHA256_CTX *ctx);
 static void sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
 static void sha256_final(SHA256_CTX *ctx, BYTE hash[]);

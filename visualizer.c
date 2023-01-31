@@ -42,7 +42,7 @@ void usage(char * Cmd)
 	printf("     %s 7 HHHIIII,IICINII,IICIINI,IIICINI,ICINICI,IIICINI,IIIINIC,ICIICIN,HIIIIII,CPIIIII,IHIIIII,CITIIII,ICPIIII,IIHIIII (factoring 15 using 3 Qubit Shor [Vandersypen et al])\n", Cmd);
 	printf("Notes: 1. 0 < numQubits < %d\n",MAX_QUBITS);
 	printf("       2. Valid gates are H (Hadamard), I (Identity), X (Not), CN (Control-Not), P (Phase), T (PI/8), s (SWAP), f (QFT) \n"); 
-	printf("          Valid Oracle operations are *,/,+,-,^,% (multiply, divide, add, subtract, power, modulo). Use n for 1st parameter, operation for 2nd parameter and = for result \n"); 
+	printf("          Valid Oracle operations are *,/,+,-,^,%% (multiply, divide, add, subtract, power, modulo). Use n for 1st parameter, operation for 2nd parameter and = for result \n"); 
 	printf("          Valid measurements are 0 (to continue when 0 is measured) and 1 (when 1 is measured) or use m for random measure\n"); 
 	printf("          Others: d to delete a qubit, c to clone a qubit \n");
 	printf("       3. Use _ as delimiter instead of , to print intermediate result, . to end\n"); 
@@ -94,7 +94,7 @@ int main(int argc, char * argv[])
 			{
 				memset(outString,0,sizeof(outString));
 				qEmul_PrintList(numQubits, qList,outString,sizeof(outString)-strlen(outString)-1);
-				printf(outString);
+				printf("%s",outString);
 			}
 			memset(algoBuf,0,sizeof(algoBuf));
 			printf("more gates ? _ to print, . to end-> ");
@@ -117,7 +117,7 @@ int main(int argc, char * argv[])
 				memset(outString,0,sizeof(outString));
 				sprintf(outString,"completed gate %s\n",nextGate);
 				qEmul_PrintList(numQubits, qList,outString,sizeof(outString)-strlen(outString)-1);
-				printf(outString);
+				printf("%s",outString);
 			}
 			else if (*AlgoStr == DELIM_END)
 			{
@@ -135,7 +135,7 @@ int main(int argc, char * argv[])
 		printf("probability of result is : %2.1f%% \n",Probability*100);
 	memset(outString,0,sizeof(outString));
 	qEmul_PrintList(numQubits,qList,outString,sizeof(outString)-1);
-	printf(outString);
+	printf("%s",outString);
 	qEmul_FreeList(qList);
 	
 	return 0;

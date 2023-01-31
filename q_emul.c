@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include <sys/time.h>
 #include <math.h>
 #include "q_emul.h"
@@ -849,7 +850,7 @@ int qEmul_function(unsigned int numBits, unsigned long * (*Function)(int, unsign
 	while ((strlen(functionParams) > 0) && (i<127))
 	{
 		memset(tempStr,0,sizeof(tempStr));
-		sscanf(functionParams,"%u %[^\n]",&tempLong,tempStr);
+		sscanf(functionParams,"%lu %[^\n]",&tempLong,tempStr);
 		strcpy(functionParams,tempStr);
 		functionArg[i++] = tempLong;
 		
