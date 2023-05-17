@@ -74,6 +74,7 @@ void qEmul_ResetProbability(void);
 int qEmul_Version(void);
 double complex qEmul_Count2List(QState * qList);
 int qEmul_PrintList(int numQubits, QState * qList, char * outStr, int outStrLen);
+int qEmul_PrintBlock(int numQubits, QState * qList, unsigned long * Block, int BlockSize);
 void qEmul_CreateList(QState ** qList);
 void qEmul_FreeList(QState * qList);
 void qEmul_InsertInList_H(unsigned long mask,QState * currState, QState ** qList);

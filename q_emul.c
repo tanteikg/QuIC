@@ -72,6 +72,50 @@ static int printBinStr(char * binString, int numQubits, unsigned long value)
 
 }
 
+int qEmul_PrintBlock(int numQubits, QState * qList, unsigned long * Block, int BlockSize)
+{
+	QState * temp;
+	int i, Count;
+	int total = 0;
+
+	if (!Block)
+		return -1;
+
+	for (i = 0; i < BlockSize; i++)
+		Block[i] = 0;
+
+	temp = qList;
+	if (!temp)
+		return -1;
+	while (temp)
+	{
+		total += fabs(creal(temp->Count));  
+		total += fabs(cimag(temp->Count));
+		temp = temp->next;
+	}
+	temp = qList;
+	i = 0;
+	while ((temp) && (i < BlockSize))
+	{
+		Count = 0;
+		Count += fabs(creal(temp->Count));  
+		Count += fabs(cimag(temp->Count));
+		if (Count > 0)
+		{
+			Count = Count * (BlockSize/total);
+			while (Count > 0)
+			{
+				Block[i++] = temp->Value;
+				Count--;
+			}
+
+		}
+		temp = temp->next;
+	}
+	return 0;
+}
+			
+
 int qEmul_PrintList(int numQubits, QState * qList, char * outStr, int outStrLen)
 {
 	QState * temp;
