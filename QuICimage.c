@@ -256,13 +256,14 @@ int main(int argc, char * argv[])
 			palette = palette6;
 		else if (numQubits == 8)
 			palette = palette8;
-		ge_GIF *gif = ge_new_gif(argv[3], w, h, palette, numQubits, -1, 3/*0*/);
+		ge_GIF *gif = ge_new_gif(argv[3], w, h, palette, numQubits, -1, 0);
 
 		qEmul_PrintBlock(numQubits,qList,colourblock,256);
 
 		for (i = 0; i < w*h; i++)
 			gif->frame[i] = 0; // starting block
-		ge_add_frame(gif,10);
+// for printing square		
+/*
 		for (i = 0; i < numQubits; i++)
 			for (k = 0; k < (256/numQubits); k++)
 				for (j = 0; j < (256/numQubits); j++)
@@ -270,10 +271,48 @@ int main(int argc, char * argv[])
 					for (k1=0;k1<numQubits;k1++)
 					{
 						gif->frame[i*256*(256/numQubits) + k*256 + j*numQubits + k1] = colourblock[i*(256/numQubits)+j];
-//	printf("frame %d = [%d]%d\n",i*256*(256/numQubits) + k*256 + j*numQubits + k1,i*(256/numQubits)+j,colourblock[i*(256/numQubits)+j]);
 					}
 				}
+*/
+// for printing diagonals
+		for (i=0; i < 256; i++)
+		{
+			k = i;
+			for (j=0; j<=i;j++)
+			{
+				gif->frame[k*256+j] = colourblock[(i*256+j)/(2*256)];
+				k--;
+			}
+			if ((i % 10) == 0)
+			{
+				void * tmp;
+				ge_add_frame(gif,1);
+				tmp = gif->back;
+				gif->back = gif->frame;
+				gif->frame=tmp;
+			}
+		}
+		
+		for (j=1; j < 256; j++)
+		{
+			k=j;
+			for (i=255;i>=j;i--)
+			{
+				gif->frame[i*256+k] = colourblock[127+(j*256+(255-i))/(2*256)];
+				k++;
+			}
+			if ((j % 10) == 0)
+			{
+				void * tmp;
+				ge_add_frame(gif,1);
+				tmp = gif->back;
+				gif->back = gif->frame;
+				gif->frame=tmp;
+			}
+		}
+		
 		ge_add_frame(gif,100);
+
 		ge_close_gif(gif);		
 		
 		printf("image written to %s \n",argv[3]);
